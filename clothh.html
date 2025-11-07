@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jems Cloth - Form Jual Beli</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            text-align: center;
+            color: #3f51b5;
+            margin-bottom: 5px;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0));
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input[type="number"], select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* Tombol Responsif */
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .primary-btn {
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .primary-btn:hover {
+            background-color: #45a049;
+        }
+
+        .primary-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .secondary-btn {
+            background-color: #f44336;
+            color: white;
+            width: 100%;
+        }
+
+        .secondary-btn:hover {
+            background-color: #da190b;
+        }
+
+        #btn-tambah-keranjang {
+            background-color: #3f51b5;
+            color: white;
+            width: 100%;
+        }
+
+        #btn-tambah-keranjang:hover {
+            background-color: #303f9f;
+        }
+
+        .delete-btn {
+            background-color: #ff9800;
+            color: white;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        .delete-btn:hover {
+            background-color: #e68a00;
+        }
+
+        /* Tabel Keranjang */
+        #tabel-keranjang {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        #tabel-keranjang th, #tabel-keranjang td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #tabel-keranjang th {
+            background-color: #f2f2f2;
+        }
+
+        #tabel-keranjang tfoot td {
+            background-color: #e0e0e0;
+            font-size: 1.1em;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        /* STYLING STRUK PRATINJAU */
+        .struk-preview {
+            border: 2px solid #3f51b5;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 30px;
+            background-color: #ffffff;
+            text-align: center;
+        }
+
+        .struk-hidden {
+            display: none; 
+        }
+
+        /* CSS untuk elemen yang digunakan jsPDF */
+        .struk-print-area {
+            display: none; 
+            width: 70mm;
+            font-family: monospace;
+            font-size: 10px;
+            padding: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> 
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👖 Jems Cloth</h1>
+            <p>Form Transaksi Penjualan Celana</p>
+        </header>
+
+        <main>
+            <section class="produk-section">
+                <h2>Pilih Produk</h2>
+                <form id="form-input-produk">
+                    <label for="produk-nama">Nama Produk:</label>
+                    <select id="produk-nama">
+                        <option value="Celana Jeans Pria Slim Fit:250000">Celana Jeans Pria Slim Fit (Rp 250.000)</option>
+                        <option value="Celana Chino Wanita Regular:180000">Celana Chino Wanita Regular (Rp 180.000)</option>
+                        <option value="Celana Bahan Formal Hitam:320000">Celana Bahan Formal Hitam (Rp 320.000)</option>
+                    </select>
+
+                    <label for="produk-jumlah">Jumlah (pcs):</label>
+                    <input type="number" id="produk-jumlah" min="1" value="1">
+
+                    <button type="submit" id="btn-tambah-keranjang">➕ Tambah ke Keranjang</button>
+                </form>
+            </section>
+
+            <hr>
+
+            <section class="keranjang-section">
+                <h2>🛒 Keranjang Belanja</h2>
+                <table id="tabel-keranjang">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Harga Satuan</th>
+                            <th>Jumlah</th>
+                            <th>Subtotal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="keranjang-body">
+                        </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>TOTAL BAYAR:</strong></td>
+                            <td colspan="2"><strong id="total-bayar-tabel">Rp 0</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button id="btn-clear-keranjang" class="secondary-btn">🗑️ Kosongkan Keranjang</button>
+            </section>
+
+            <hr>
+
+            <section class="pembayaran-section">
+                <h2>💰 Pembayaran</h2>
+                <div class="input-group">
+                    <label>Total Belanja:</label>
+                    <input type="text" id="total-belanja-display" value="Rp 0" readonly>
+                </div>
+                <div class="input-group">
+                    <label for="jumlah-bayar">Jumlah Uang Pembeli (Rp):</label>
+                    <input type="number" id="jumlah-bayar" min="0" placeholder="Masukkan jumlah uang">
+                </div>
+                <div class="input-group">
+                    <label>Uang Kembalian:</label>
+                    <input type="text" id="uang-kembalian-display" value="Rp 0" readonly>
+                </div>
+
+                <button id="btn-checkout" class="primary-btn" disabled>✅ Checkout & Cetak Struk</button>
+            </section>
+        </main>
+        
+        <div id="struk-preview-area" class="struk-hidden struk-preview">
+            <h2 style="color: #3f51b5;">Bukti Struk Pembelian (Pratinjau)</h2>
+            <div id="preview-content">
+                </div>
+            
+            <p style="font-weight: bold; margin-top: 20px;">
+                TRIMAKASIH TELAH BERBELANJA DI JEMS CLOTH!
+            </p>
+            </div>
+
+        <div id="struk-print-area" class="struk-print-area">
+            </div>
+    </div>
+    
+    <script>
+        (function() {
+            // --- Variabel Global dan Data Produk ---
+            let keranjang = []; 
+
+            // Ambil elemen DOM
+            const keranjangBody = document.getElementById('keranjang-body');
+            const totalBayarTabel = document.getElementById('total-bayar-tabel');
+            const totalBelanjaDisplay = document.getElementById('total-belanja-display');
+            const jumlahBayarInput = document.getElementById('jumlah-bayar');
+            const uangKembalianDisplay = document.getElementById('uang-kembalian-display');
+            const formInputProduk = document.getElementById('form-input-produk');
+            const btnCheckout = document.getElementById('btn-checkout');
+            const btnClearKeranjang = document.getElementById('btn-clear-keranjang');
+            const strukPreviewArea = document.getElementById('struk-preview-area'); 
+            const previewContent = document.getElementById('preview-content');
+            const strukPrintArea = document.getElementById('struk-print-area'); 
+            // const btnSelesai = document.getElementById('btn-selesai'); // Tombol Selesai Dihapus
+
+            // --- Fungsi Helper ---
+            const formatRupiah = (angka) => {
+                if (typeof angka !== 'number') angka = parseInt(angka) || 0;
+                return "Rp " + new Intl.NumberFormat('id-ID').format(angka);
+            };
+
+            const loadKeranjangFromStorage = () => {
+                const storedKeranjang = localStorage.getItem('jemsClothKeranjang');
+                if (storedKeranjang) {
+                    try {
+                        keranjang = JSON.parse(storedKeranjang);
+                        renderKeranjang();
+                        hitungTotal();
+                    } catch (e) {
+                        keranjang = []; 
+                    }
+                }
+            };
+
+            const saveKeranjangToStorage = () => {
+                localStorage.setItem('jemsClothKeranjang', JSON.stringify(keranjang));
+            };
+
+            // FUNGSI RESET TRANSAKSI (dipindahkan untuk dipanggil setelah checkout)
+            const resetTransaksi = () => {
+                // 1. Reset Data Keranjang dan Storage
+                keranjang = [];
+                renderKeranjang(); 
+                saveKeranjangToStorage();
+                
+                // 2. Reset Input Pembayaran
+                jumlahBayarInput.value = ''; 
+                hitungKembalian(0); 
+                
+                // 3. Sembunyikan Pratinjau Struk
+                strukPreviewArea.classList.add('struk-hidden');
+                
+                // 4. INSTANT SCROLL KE ATAS (Fast Respon)
+                window.scrollTo({ top: 0, behavior: 'instant' }); 
+            }
+
+            // --- Fungsi Utama ---
+            const tambahProduk = (e) => {
+                e.preventDefault();
+                const produkSelect = document.getElementById('produk-nama');
+                const jumlahInput = document.getElementById('produk-jumlah');
+                const [nama, hargaStr] = produkSelect.value.split(':');
+                const harga = parseInt(hargaStr);
+                const jumlah = parseInt(jumlahInput.value);
+
+                if (isNaN(jumlah) || jumlah <= 0) {
+                    alert("Jumlah harus lebih dari 0.");
+                    return;
+                }
+
+                const existingItem = keranjang.find(item => item.nama === nama);
+
+                if (existingItem) {
+                    existingItem.jumlah += jumlah;
+                } else {
+                    keranjang.push({ nama: nama, harga: harga, jumlah: jumlah });
+                }
+                
+                jumlahInput.value = 1;
+                renderKeranjang();
+                saveKeranjangToStorage();
+                strukPreviewArea.classList.add('struk-hidden');
+            };
+
+            const renderKeranjang = () => {
+                keranjangBody.innerHTML = ''; 
+                
+                if (keranjang.length === 0) {
+                    keranjangBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: gray;">Keranjang kosong. Tambahkan produk di atas.</td></tr>';
+                }
+
+                keranjang.forEach((item, index) => {
+                    const subtotal = item.harga * item.jumlah;
+                    const row = keranjangBody.insertRow();
+                    row.innerHTML = `
+                        <td>${item.nama}</td>
+                        <td>${formatRupiah(item.harga)}</td>
+                        <td>${item.jumlah}</td>
+                        <td>${formatRupiah(subtotal)}</td>
+                        <td><button class="delete-btn" data-index="${index}">❌ Hapus</button></td>
+                    `;
+                });
+
+                document.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', hapusItemKeranjang);
+                });
+
+                hitungTotal(); 
+            };
+            
+            const hapusItemKeranjang = (e) => {
+                const index = parseInt(e.target.dataset.index);
+                keranjang.splice(index, 1); 
+                renderKeranjang();
+                saveKeranjangToStorage();
+            };
+
+            const hitungTotal = () => {
+                const total = keranjang.reduce((sum, item) => sum + (item.harga * item.jumlah), 0);
+                totalBayarTabel.textContent = formatRupiah(total);
+                totalBelanjaDisplay.value = formatRupiah(total);
+                hitungKembalian(total);
+                return total;
+            };
+
+            const hitungKembalian = (total) => {
+                const totalBelanja = total !== undefined ? total : hitungTotal();
+                const jumlahBayar = parseInt(jumlahBayarInput.value) || 0;
+                const kembalian = jumlahBayar - totalBelanja;
+                
+                uangKembalianDisplay.value = formatRupiah(kembalian);
+
+                if (keranjang.length > 0 && kembalian >= 0) {
+                    btnCheckout.disabled = false;
+                } else {
+                    btnCheckout.disabled = true;
+                }
+            };
+            
+            const clearKeranjang = () => {
+                 if(confirm("Yakin ingin mengosongkan keranjang?")){
+                     resetTransaksi();
+                 }
+            }
+
+
+            // 7. Checkout, Tampilkan Pratinjau, Cetak Struk, DAN RESET TRANSAKSI
+            const checkoutDanCetak = () => {
+                const total = hitungTotal();
+                const bayar = parseInt(jumlahBayarInput.value) || 0;
+                const kembalian = bayar - total;
+
+                if (kembalian < 0) {
+                    alert("Jumlah bayar kurang dari total belanja!");
+                    return;
+                }
+
+                // 7a. Buat konten struk HTML (sesuai format struk)
+                let strukContent = `
+                    <div style="font-family: monospace; font-size: 10px; padding: 5px; color: #000; text-align: left;">
+                        <div class="struk-header" style="text-align: center; line-height: 1.2;">
+                            <h3 style="margin: 0; font-size: 14px;">Jems Cloth</h3>
+                            <p style="margin: 0; font-size: 10px;">Form Transaksi Penjualan</p>
+                            <p style="margin: 0; font-size: 8px;">Jln. Contoh No. 123</p>
+                            <hr style="border: 0; border-top: 1px dashed #333; margin: 5px 0;">
+                            <p style="margin: 0;">Tgl: ${new Date().toLocaleDateString('id-ID')}</p>
+                            <p style="margin: 0;">Waktu: ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <hr style="border: 0; border-top: 1px dashed #333; margin: 5px 0;">
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                            <tbody>
+                `;
+
+                keranjang.forEach(item => {
+                    const subtotal = item.harga * item.jumlah;
+                    strukContent += `
+                        <tr>
+                            <td colspan="3" style="text-align: left; padding: 1px 0;">${item.nama}</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; padding: 1px 0; padding-left: 10px;">${item.jumlah} x ${formatRupiah(item.harga).replace('Rp ', '')}</td>
+                            <td style="text-align: right; padding: 1px 0;" colspan="2">${formatRupiah(subtotal).replace('Rp ', '')}</td>
+                        </tr>
+                    `;
+                });
+
+                strukContent += `
+                            </tbody>
+                        </table>
+                        <hr style="border: 0; border-top: 1px dashed #333; margin: 5px 0;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="text-align: left; padding: 1px 0; font-weight: bold;">TOTAL BELANJA:</td>
+                                <td style="text-align: right; padding: 1px 0; font-weight: bold;">${formatRupiah(total).replace('Rp ', '')}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; padding: 1px 0;">BAYAR:</td>
+                                <td style="text-align: right; padding: 1px 0;">${formatRupiah(bayar).replace('Rp ', '')}</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left; padding: 1px 0; font-weight: bold; font-size: 11px;">KEMBALIAN:</td>
+                                <td style="text-align: right; padding: 1px 0; font-weight: bold; font-size: 11px;">${formatRupiah(kembalian).replace('Rp ', '')}</td>
+                            </tr>
+                        </table>
+                        <hr style="border: 0; border-top: 1px dashed #333; margin: 5px 0;">
+                        <div class="struk-footer" style="text-align: center; font-size: 9px; line-height: 1.2;">
+                            <p style="margin: 0;">TERIMA KASIH ATAS KUNJUNGAN ANDA</p>
+                            <p style="margin: 0;">(Barang yang sudah dibeli tidak dapat ditukar)</p>
+                        </div>
+                    </div>
+                `;
+
+                // Tampilkan Pratinjau
+                previewContent.innerHTML = strukContent;
+                strukPreviewArea.classList.remove('struk-hidden');
+                
+                // INSTANT SCROLL KE PRATINJAU
+                strukPreviewArea.scrollIntoView({ behavior: 'instant', block: 'start' });
+
+                // Masukkan konten ke area Print PDF
+                strukPrintArea.innerHTML = strukContent;
+
+                // 7b. Cetak ke PDF menggunakan jsPDF
+                const { jsPDF } = window.jspdf; 
+                const doc = new jsPDF('p', 'mm', [80, 200]); 
+
+                doc.html(strukPrintArea, {
+                    callback: function (doc) {
+                        // Simpan/Unduh file PDF
+                        doc.save('Struk_JemsCloth_' + new Date().getTime() + '.pdf');
+                        
+                        // --- FUNGSI RESET OTOMATIS SETELAH PDF DIUNDUH ---
+                        // Panggil resetTransaksi di sini agar form langsung bersih setelah struk sukses dibuat.
+                        resetTransaksi(); 
+                    },
+                    x: 5,
+                    y: 5,
+                    width: 70, 
+                    windowWidth: 650
+                });
+
+                alert("Transaksi berhasil! Struk telah ditampilkan dan diunduh. Form akan direset.");
+            };
+
+            // --- Event Listeners ---
+            formInputProduk.addEventListener('submit', tambahProduk);
+            jumlahBayarInput.addEventListener('input', () => hitungKembalian());
+            btnClearKeranjang.addEventListener('click', clearKeranjang);
+            
+            // Tombol Checkout sekarang menjalankan fungsi cetak DAN reset transaksi.
+            btnCheckout.addEventListener('click', checkoutDanCetak); 
+
+            loadKeranjangFromStorage();
+        })();
+    </script>
+</body>
+</html>
